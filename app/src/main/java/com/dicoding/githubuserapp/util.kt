@@ -6,22 +6,27 @@ import android.widget.Toast
 import com.loopj.android.http.AsyncHttpClient
 import com.loopj.android.http.AsyncHttpResponseHandler
 import cz.msebera.android.httpclient.Header
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import org.jetbrains.anko.runOnUiThread
 
 object util {
-    fun download(c : Context, url : String, response: (String) -> Unit) {
-        val client = AsyncHttpClient()
-        client.addHeader("User-Agent", "request")
-        client.addHeader("Authorization", "token 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")
-        client.get(url, object : AsyncHttpResponseHandler() {
 
+    fun download(c : Context, url : String, response: (String) -> Unit) : Job = GlobalScope.launch(Dispatchers.IO) {
+        val client = AsyncHttpClient()
+        client.addHeader("User-Agent", "Mozilla/5.0")
+        client.addHeader("Authorization", "token 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")
+        c.runOnUiThread{client.get(url, object : AsyncHttpResponseHandler() {
             override fun onSuccess(
                 statusCode: Int,
                 headers: Array<out Header>?,
                 responseBody: ByteArray?
-            ) {
+            )
+            { Log.d("tag", "statuscode = $statusCode headers = ${headers?.joinToString()} responseBody = ${responseBody?.decodeToString()}")
                 if (responseBody != null) {
                     val result = String(responseBody)
-                    Log.d("tag", result)
                     response.invoke(result)
                 }
             }
@@ -31,7 +36,7 @@ object util {
                 headers: Array<out Header>?,
                 responseBody: ByteArray?,
                 error: Throwable?
-            ) {
+            ) { Log.d("tag", "statuscode = $statusCode headers = ${headers?.joinToString()} responseBody = ${responseBody?.decodeToString()} error = $error", error)
                 val errorMessage = when (statusCode) {
                     401 -> "$statusCode : Bad Request"
                     403 -> "$statusCode : Forbidden"
@@ -41,7 +46,8 @@ object util {
                 Toast.makeText(c, errorMessage, Toast.LENGTH_LONG)
                     .show()
             }
-        })
+        })}
+
     }
 
 }

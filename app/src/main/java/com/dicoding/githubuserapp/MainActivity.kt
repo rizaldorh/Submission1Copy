@@ -9,6 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -16,6 +20,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: UserAdapter
     private lateinit var searchBar : EditText
+
+    var job : Job ?= null
+    var job2 : Job ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +32,12 @@ class MainActivity : AppCompatActivity() {
         searchBar = findViewById(R.id.search_bar)
         searchBar.isSingleLine = true
         searchBar.addTextChangedListener {
-            searchUser(it.toString())
+            if (!it.isNullOrBlank()) {
+                job2?.cancel()
+                job2 = GlobalScope.launch { delay(1500)
+                    searchUser(it.toString())
+                }
+            }
         }
 
         adapter = UserAdapter(this)
@@ -37,10 +49,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun searchUser(username : String) {
+        job?.cancel()
         val pb = findViewById<ProgressBar>(R.id.loading)
-        pb.visibility = View.VISIBLE
+        runOnUiThread {pb.visibility = View.VISIBLE  }
         val url = "https://api.github.com/search/users?q=$username"
-        util.download(this,url) {
+        job = util.download(this,url) {
             try {
                 val list = arrayListOf<UserItem>()
                 val jsonObject = JSONObject(it)
@@ -62,10 +75,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun initUser() {
+        job?.cancel()
         val pb = findViewById<ProgressBar>(R.id.loading)
         pb.visibility = View.VISIBLE
         val url = "https://api.github.com/users"
-        util.download(this,url) {
+        job = util.download(this,url) {
             try {
                 val list = arrayListOf<UserItem>()
                 val jsonArray = JSONArray(it)

@@ -12,9 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Job
 import org.json.JSONArray
 
-class FragmentUser : Fragment() {
+class FragmentUser2 : Fragment() {
 
-    private lateinit var adapter: UserAdapter
+    private lateinit var adapter: UserAdapter2
     private lateinit var username: String
 //    var isFollower = false
     var job : Job?= null
@@ -24,27 +24,27 @@ class FragmentUser : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_user, container)
+        return inflater.inflate(R.layout.fragment_user2, container)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 //        isFollower = arguments?.getBoolean("follow", false) ?: false
 
-        val recyclerView: RecyclerView = view.findViewById(R.id.recycle_view)
+        val recyclerView: RecyclerView = view.findViewById(R.id.recycle_view2)
 
-        adapter = UserAdapter(requireContext())
+        adapter = UserAdapter2(requireContext())
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(context)
         username = arguments?.getString("user") ?: "default"
-        getFollower(username)
+        getFollowing(username)
     }
 
-    fun getFollower(username : String) {
-        val pb = view!!.findViewById<ProgressBar>(R.id.loading)
+    fun getFollowing(username : String) {
+        val pb = view!!.findViewById<ProgressBar>(R.id.loading2)
         pb.visibility = View.VISIBLE
 //        val end = if(isFollower) "followers" else "following"
-        val url = "https://api.github.com/users/$username/followers"
+        val url = "https://api.github.com/users/$username/following"
         job?.cancel()
         job = util.download(requireContext(),url) {
             try {

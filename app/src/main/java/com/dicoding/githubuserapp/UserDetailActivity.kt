@@ -10,12 +10,15 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.coroutines.Job
 import org.json.JSONObject
 
 class UserDetailActivity: AppCompatActivity() {
     companion object {
         const val EXTRA_USER = "extra_user"
     }
+
+    var job : Job?= null
 
     private lateinit var adapter: ViewPagerAdapter
 
@@ -26,13 +29,13 @@ class UserDetailActivity: AppCompatActivity() {
         val user  = intent.getSerializableExtra(EXTRA_USER) as UserItem
         downloadDetail(user.username)
 
-
         tabLayout()
     }
 
     fun downloadDetail (username : String) {
+        job?.cancel()
         val url = "https://api.github.com/users/$username"
-        util.download(this,url) {
+        job = util.download(this,url) {
             try {
                 val jsonObject = JSONObject(it)
                 val username: String = jsonObject.getString("login")
